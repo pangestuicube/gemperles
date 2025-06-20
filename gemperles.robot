@@ -10,7 +10,9 @@ ${BUTTON_ACCEPT_ALL_COOKIES}    //button[@id='btn-cookie-allow']
 ${BUTTON_SETTINGS}              //div[@class='actions pr-cookie-notice-actions']//button[2]
 ${BUTTON_CONFIRM}               //button[@class='action confirm primary']
 ${BROWSER}                      Chrome
+${HEADLESS}                     True
 ${CHROME_DRIVER_PATH}           D:/Icube/QA/Otomation/Drivers/chromedriver/chromedriver.exe
+${EDGE_DRIVER_PATH}             D:/Icube/QA/Otomation/Drivers/edgedriver/msedgedriver.exe
 
 
 *** Test Cases ***
@@ -22,7 +24,15 @@ Run Cookie Test For All URLs
 
 *** Keywords ***
 Setup
-    Open Browser    about:blank    ${BROWSER}    executable_path=${CHROME_DRIVER_PATH}
+    ${options}=    Evaluate    sys.modules['selenium.webdriver'].${BROWSER.lower()}.options.Options()    sys
+    IF    '${HEADLESS}' == 'True'
+        Call Method    ${options}    add_argument    --headless
+    END
+    IF    '${HEADLESS}' == 'True'
+        Call Method    ${options}    add_argument    --disable-gpu
+    END
+    ${driver_path}=    Set Variable If    '${BROWSER}' == 'chrome'    ${CHROME_DRIVER_PATH}    ${EDGE_DRIVER_PATH}
+    Open Browser    about:blank    ${BROWSER}    executable_path=${driver_path}    options=${options}
     Maximize Browser Window
     Set Selenium Speed    0.3
 
@@ -63,8 +73,8 @@ RunScenarioAcceptSettings
     GoToUrlAndDoAction    ${url}    AcceptSettings
 
 RunTestForAllUrls
-    ${success_log}=    Set Variable    success.log
-    ${fail_log}=    Set Variable    fail.log
+    ${success_log}=    Set Variable    success${BROWSER}.log
+    ${fail_log}=    Set Variable    fail${BROWSER}.log
     Create File    ${success_log}
     Create File    ${fail_log}
 
