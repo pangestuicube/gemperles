@@ -12,8 +12,10 @@ ${BUTTON_SETTINGS}              //div[@class='actions pr-cookie-notice-actions']
 ${BUTTON_CONFIRM}               //button[@class='action confirm primary']
 ${BROWSER}                      Chrome
 ${HEADLESS}                     True
-${CHROME_DRIVER_PATH}           D:/Icube/QA/Otomation/Drivers/chromedriver/chromedriver.exe
-${EDGE_DRIVER_PATH}             D:/Icube/QA/Otomation/Drivers/edgedriver/msedgedriver.exe
+# ${CHROME_DRIVER_PATH}    D:/Icube/QA/Otomation/Drivers/chromedriver/chromedriver.exe
+# ${EDGE_DRIVER_PATH}    D:/Icube/QA/Otomation/Drivers/edgedriver/msedgedriver.exe
+${CHROME_DRIVER_PATH}           ${CURDIR}/../Drivers/chromedriver-linux64/chromedriver
+${EDGE_DRIVER_PATH}             ${CURDIR}/../Drivers/edgedriver_linux64/msedgedriver
 
 
 *** Test Cases ***
@@ -21,6 +23,7 @@ Run Cookie Test For All URLs
     Setup
     RunTestForAllUrls
     Close Browser
+
 
 
 *** Keywords ***
