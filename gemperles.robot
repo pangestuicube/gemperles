@@ -2,6 +2,7 @@
 Library         SeleniumLibrary
 Library         OperatingSystem
 Library         Collections
+Library         String
 Variables       testdata.py
 
 
@@ -25,12 +26,23 @@ Run Cookie Test For All URLs
 *** Keywords ***
 Setup
     ${options}=    Evaluate    sys.modules['selenium.webdriver'].${BROWSER.lower()}.options.Options()    sys
+
     IF    '${HEADLESS}' == 'True'
-        Call Method    ${options}    add_argument    --headless
+        Call Method    ${options}    add_argument    --headless=new
+    END
+    IF    '${HEADLESS}' == 'True'
+        Call Method    ${options}    add_argument    --no-sandbox
+    END
+    IF    '${HEADLESS}' == 'True'
+        Call Method    ${options}    add_argument    --disable-dev-shm-usage
     END
     IF    '${HEADLESS}' == 'True'
         Call Method    ${options}    add_argument    --disable-gpu
     END
+    IF    '${HEADLESS}' == 'True'
+        Call Method    ${options}    add_argument    --remote-debugging-port=9222
+    END
+
     ${driver_path}=    Set Variable If    '${BROWSER}' == 'chrome'    ${CHROME_DRIVER_PATH}    ${EDGE_DRIVER_PATH}
     Open Browser    about:blank    ${BROWSER}    executable_path=${driver_path}    options=${options}
     Maximize Browser Window
