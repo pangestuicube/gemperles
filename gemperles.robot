@@ -33,7 +33,7 @@ Setup
     IF    '${HEADLESS}' == 'True'
         Call Method    ${options}    add_argument    --disable-gpu
     END
-    ${driver_path}=    Set Variable If    '${BROWSER}' == 'chrome'    ${CHROME_DRIVER_PATH}    ${EDGE_DRIVER_PATH}
+    ${driver_path}=    Set Variable If    '${BROWSER}' == 'chrome'    ${CHROME_DRIVER_PATH}    #    ${EDGE_DRIVER_PATH}
     Open Browser    about:blank    ${BROWSER}    executable_path=${driver_path}    options=${options}
     Maximize Browser Window
     Set Selenium Speed    0.3
