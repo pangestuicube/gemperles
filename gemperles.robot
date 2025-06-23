@@ -1,7 +1,8 @@
 *** Settings ***
-Library         SeleniumLibrary
-Library         OperatingSystem
 Library         Collections
+Library         DateTime
+Library         OperatingSystem
+Library         SeleniumLibrary
 Variables       testdata.py
 
 
@@ -10,11 +11,12 @@ ${BUTTON_ACCEPT_ALL_COOKIES}    //button[@id='btn-cookie-allow']
 ${BUTTON_SETTINGS}              //div[@class='actions pr-cookie-notice-actions']//button[2]
 ${BUTTON_CONFIRM}               //button[@class='action confirm primary']
 ${BROWSER}                      Chrome
-${HEADLESS}                     True
+${HEADLESS}                     False
 # ${CHROME_DRIVER_PATH}    D:/Icube/QA/Otomation/Drivers/chromedriver/chromedriver.exe
 # ${EDGE_DRIVER_PATH}    D:/Icube/QA/Otomation/Drivers/edgedriver/msedgedriver.exe
-${CHROME_DRIVER_PATH}           ${CURDIR}/../Drivers/chromedriver-linux64/chromedriver
-${EDGE_DRIVER_PATH}             ${CURDIR}/../Drivers/edgedriver_linux64/msedgedriver
+${CHROME_DRIVER_PATH}           ${CURDIR}/../../Drivers/chromedriver/chromedriver
+${EDGE_DRIVER_PATH}             ${CURDIR}/../../Drivers/edgedriver_mac64_m1/msedgedriver
+${DATE_FORMAT}                  %d%m%y_%H%M%S
 
 
 *** Test Cases ***
@@ -22,6 +24,7 @@ Run Cookie Test For All URLs
     Setup
     RunTestForAllUrls
     Close Browser
+
 
 
 *** Keywords ***
@@ -33,7 +36,7 @@ Setup
     IF    '${HEADLESS}' == 'True'
         Call Method    ${options}    add_argument    --disable-gpu
     END
-    ${driver_path}=    Set Variable If    '${BROWSER}' == 'chrome'    ${CHROME_DRIVER_PATH}    #    ${EDGE_DRIVER_PATH}
+    ${driver_path}=    Set Variable If    '${BROWSER}' == 'chrome'    ${CHROME_DRIVER_PATH}    ${EDGE_DRIVER_PATH}
     Open Browser    about:blank    ${BROWSER}    executable_path=${driver_path}    options=${options}
     Maximize Browser Window
     Set Selenium Speed    0.3
@@ -56,7 +59,7 @@ MyAccountAction
     ...    //ul[@class='header links']//li[contains(@class,'authorization-link')]/a
     ...    timeout=30s
     Click Element    //ul[@class='header links']//li[contains(@class,'authorization-link')]/a
-    Wait Until Element Is Visible    //input[@id='ajaxlogin-email']    timeout=30s
+    Wait Until Element Is Visible    //button[@id='gotologinpage']    timeout=30s
 
 GoToUrlAndDoAction
     [Arguments]    ${url}    ${acceptKeyword}
@@ -75,8 +78,9 @@ RunScenarioAcceptSettings
     GoToUrlAndDoAction    ${url}    AcceptSettings
 
 RunTestForAllUrls
-    ${success_log}=    Set Variable    success${BROWSER}.log
-    ${fail_log}=    Set Variable    fail${BROWSER}.log
+    ${current_date}=    Get Current Date    result_format=${DATE_FORMAT}
+    ${success_log}=    Set Variable    success${BROWSER}_${current_date}.log
+    ${fail_log}=    Set Variable    fail${BROWSER}_${current_date}.log
     Create File    ${success_log}
     Create File    ${fail_log}
 
@@ -85,14 +89,44 @@ RunTestForAllUrls
     Set Suite Variable    ${SUCCESS_URLS}
     Set Suite Variable    ${FAILED_URLS}
 
-    FOR    ${url}    IN    @{test_urls}
-        Log    Running AcceptCookies on ${url}
-        ${status1}    ${msg1}=    Run Keyword And Ignore Error    RunScenarioAcceptCookies    ${url}
-        IF    '${status1}' == 'PASS'
-            Append To List    ${SUCCESS_URLS}    ${url} (AcceptCookies)
-            Append To File    ${success_log}    ${url}\n
-        ELSE
-            Append To List    ${FAILED_URLS}    ${url} (AcceptCookies)
-            Append To File    ${fail_log}    ${url}\n
+    # FOR    ${url}    IN    @{test_urls}
+    #    Log    Running AcceptCookies on ${url}
+    #    ${status1}    ${msg1}=    Run Keyword And Ignore Error    RunScenarioAcceptCookies    ${url}
+    #    IF    '${status1}' == 'PASS'
+    #    Append To List    ${SUCCESS_URLS}    ${url} (AcceptCookies)
+    #    Append To File    ${success_log}    ${url}\n
+    #    ELSE
+    #    Append To List    ${FAILED_URLS}    ${url} (AcceptCookies)
+    #    Append To File    ${fail_log}    ${url}\n
+    #    END
+    # END
+    IF    '${BROWSER}' == 'chrome'
+        ${chrome_fail_count}=    Get Length    ${chrome_fail}
+        Log    message=total chrome_fail_count : ${chrome_fail_count}
+
+        FOR    ${url}    IN    @{chrome_fail}
+            Log    Running AcceptCookies on ${url}
+            ${status1}    ${msg1}=    Run Keyword And Ignore Error    RunScenarioAcceptCookies    ${url}
+            IF    '${status1}' == 'PASS'
+                Append To List    ${SUCCESS_URLS}    ${url} (AcceptCookies)
+                Append To File    ${success_log}    ${url}\n
+            ELSE
+                Append To List    ${FAILED_URLS}    ${url} (AcceptCookies)
+                Append To File    ${fail_log}    ${url}\n
+            END
+        END
+    ELSE IF    '${BROWSER}' == 'edge'
+        ${edge_fail_count}=    Get Length    ${edge_fail}
+        Log    message=total chrome_fail_count : ${edge_fail_count}
+        FOR    ${url}    IN    @{edge_fail}
+            Log    Running AcceptCookies on ${url}
+            ${status1}    ${msg1}=    Run Keyword And Ignore Error    RunScenarioAcceptCookies    ${url}
+            IF    '${status1}' == 'PASS'
+                Append To List    ${SUCCESS_URLS}    ${url} (AcceptCookies)
+                Append To File    ${success_log}    ${url}\n
+            ELSE
+                Append To List    ${FAILED_URLS}    ${url} (AcceptCookies)
+                Append To File    ${fail_log}    ${url}\n
+            END
         END
     END
